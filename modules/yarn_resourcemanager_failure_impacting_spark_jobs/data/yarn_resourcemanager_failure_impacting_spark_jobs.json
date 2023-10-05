@@ -1,0 +1,142 @@
+{
+  "name": "yarn_resourcemanager_failure_impacting_spark_jobs",
+  "description": "This incident type involves the failure of the YARN ResourceManager, which can impact the performance of Spark jobs. The ResourceManager is responsible for managing resources in a Hadoop cluster, and when it fails, it can prevent Spark jobs from running properly. This incident requires investigation to determine the root cause of the failure, and recovery steps to restore the ResourceManager and prevent similar failures from occurring in the future.",
+  "params": [
+    {
+      "name": "SPARK",
+      "value": ""
+    },
+    {
+      "name": "YARN_RESOURCEMANAGER",
+      "value": ""
+    },
+    {
+      "name": "NUMBER_OF_NODES_TO_INCREASE_TO",
+      "value": ""
+    },
+    {
+      "name": "RESOURCE_MANAGER_HOST",
+      "value": ""
+    },
+    {
+      "name": "PATH_TO_SPARK_LOGS",
+      "value": ""
+    },
+    {
+      "name": "HOST_NAME",
+      "value": ""
+    },
+    {
+      "name": "K8S_CLUSTER_NAME",
+      "value": ""
+    },
+    {
+      "name": "NAMESPACE",
+      "value": ""
+    }
+  ],
+  "cells": [
+    {
+      "name": "cell_1",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## YARN ResourceManager Failure Impacting Spark Jobs.\nThis incident type involves the failure of the YARN ResourceManager, which can impact the performance of Spark jobs. The ResourceManager is responsible for managing resources in a Hadoop cluster, and when it fails, it can prevent Spark jobs from running properly. This incident requires investigation to determine the root cause of the failure, and recovery steps to restore the ResourceManager and prevent similar failures from occurring in the future."
+    },
+    {
+      "name": "cell_2",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the status of the YARN ResourceManager service"
+    },
+    {
+      "name": "cell_3",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `systemctl status ${YARN_RESOURCEMANAGER}`"
+    },
+    {
+      "name": "cell_4",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the logs of the YARN ResourceManager service"
+    },
+    {
+      "name": "cell_5",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `journalctl -u ${YARN_RESOURCEMANAGER}`"
+    },
+    {
+      "name": "cell_6",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the resource usage of the YARN ResourceManager service"
+    },
+    {
+      "name": "cell_7",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `top -p $(pidof ${YARN_RESOURCEMANAGER})`"
+    },
+    {
+      "name": "cell_8",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check if the Spark jobs are running"
+    },
+    {
+      "name": "cell_9",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `ps aux | grep ${SPARK}`"
+    },
+    {
+      "name": "cell_10",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the logs of the Spark jobs"
+    },
+    {
+      "name": "cell_11",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `cat ${PATH_TO_SPARK_LOGS}`"
+    },
+    {
+      "name": "cell_12",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the resource usage of the Spark jobs"
+    },
+    {
+      "name": "cell_13",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `top -p $(pidof ${SPARK})`"
+    },
+    {
+      "name": "cell_14",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## The YARN ResourceManager may have been overloaded with requests, causing it to fail."
+    },
+    {
+      "name": "cell_15",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "host | host_name=$HOST_NAME | invoke_chk_yarn_resource_manager($RESOURCE_MANAGER_HOST)"
+    },
+    {
+      "name": "cell_16",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Increase the number of YARN ResourceManager nodes in the cluster to provide redundancy and reduce the impact of a single node failure."
+    },
+    {
+      "name": "cell_17",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "host | host_name=$HOST_NAME | invoke_increase_nodes($NUMBER_OF_NODES_TO_INCREASE_TO)"
+    }
+  ]
+}
